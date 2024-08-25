@@ -1,0 +1,1 @@
+migrate -path db/migration -database "postgresql://root:boiler@localhost:5432/simple_bank?sslmode=disable" -verbose up
