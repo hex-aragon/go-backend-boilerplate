@@ -8,8 +8,8 @@ import (
 
 // Store provides all functions to execute db queries and transaction
 type Store interface{ 
-	TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error)
-	
+	Querier
+	TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error)	
 }
 
 // SQLStore provides all functions to execute SQL queries and transaction 
