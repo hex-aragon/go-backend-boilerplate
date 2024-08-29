@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -16,51 +16,53 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGetAccountAPI(t *testing.T){
+//mock test
+//mockgen -package mockdb -destination db/mock/store.go github.com/hex-aragon/go-backend-boilerplate/db/sqlc Store
+
+func TestGetAccountAPI(t *testing.T) {
 	account := randomAccount()
+	fmt.Println("account",account)
 
 	testCases := []struct {
-		name string 
-		accountID int64 
-		buildStubs func(store *mockdb.MockStore)
+		name          string
+		accountID     int64
+		buildStubs    func(store *mockdb.MockStore)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
-			name	  :			"OK",
-			accountID : 	account.ID,
-			buildStubs: 	func(store *mockdb.MockStore) {
-				store.EXPECT().GetAccount(gomock.Any(), gomock.Eq(account.ID)).Times(1).Return(account, nil),
+			name:       "OK",
+			accountID:  account.ID,
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetAccount(gomock.Any(), gomock.Eq(account.ID)).
+					Times(1).
+					Return(account, nil)
 			},
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder){
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
 				requireBodyMatchAccount(t, recorder.Body, account)
 			},
 		},
-		//TODO: add more cases 
+		// TODO: add more cases
 	}
 
-	for i := range testCases {
-		tc := testCases[i]
-
-		tc.Run(tc.name, func(t *testing.T){
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-		
+
 			store := mockdb.NewMockStore(ctrl)
-			//build stubs
 			tc.buildStubs(store)
 
-			//Times : 호출 횟수 
-			store.EXPECT().GetAccount(gomock.Any(), gomock.Eq(account.ID)).Times(1).Return(account, nil)
-		
-			//start test server and send request
+			// Start test server and send request
 			server := NewServer(store)
 			recorder := httptest.NewRecorder()
-		
+
+			fmt.Println("account.ID",account.ID)
 			url := fmt.Sprintf("/accounts/%d", account.ID)
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
-		
+
 			server.router.ServeHTTP(recorder, request)
 			tc.checkResponse(t, recorder)
 		})
@@ -77,12 +79,21 @@ func randomAccount() db.Account {
 }
 
 func requireBodyMatchAccount(t *testing.T, body *bytes.Buffer, account db.Account) {
-	data ,err := ioutil.ReadAll(body)
+	fmt.Println("body",body)
+	
+	data ,err := io.ReadAll(body)
 	require.NoError(t, err)
-
+	fmt.Println("data",data)
+	
 	var gotAccount db.Account 
 	err = json.Unmarshal(data , &gotAccount)
-	require.NoError(t, err)
+	// fmt.Println("t",t)
+	// fmt.Println("err",err)
+	fmt.Println("err",err)
+
+	fmt.Println("account",account)
+	fmt.Println("gotAccount",gotAccount)
+	require.NoError(t, err )
 	require.Equal(t, account, gotAccount)
 
 }
