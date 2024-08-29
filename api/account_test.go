@@ -17,9 +17,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-//mock test
-//mockgen -package mockdb -destination db/mock/store.go github.com/hex-aragon/go-backend-boilerplate/db/sqlc Store
-
 func TestGetAccountAPI(t *testing.T) {
 	account := randomAccount()
 	fmt.Println("account",account)
