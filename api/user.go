@@ -36,6 +36,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 	log.Println("req",&req)
 
 	hashedPassword, err := util.HashPassword(req.Password)
+	//hashedPassword, err := util.HashPassword("xyz")
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return 

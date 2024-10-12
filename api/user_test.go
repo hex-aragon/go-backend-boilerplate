@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -19,6 +21,33 @@ import (
 )
 
 
+type eqCreateUserParamsMatcher struct {
+	arg db.CreateUserParams
+	password string 
+}
+
+func (e eqCreateUserParamsMatcher) Matches(x interface{}) bool {
+	arg, ok := x.(db.CreateUserParams)
+	if !ok {
+		return false 
+	}
+
+	err := util.CheckPassword(e.password, arg.HashedPassword)
+	if err != nil {
+		return false 
+	}
+
+	e.arg.HashedPassword = arg.HashedPassword
+	return reflect.DeepEqual(e.arg, arg)
+}
+
+func (e eqCreateUserParamsMatcher) String() string {
+	return fmt.Sprintf("mathes arg %v and password %v",e.arg, e.password)
+}
+
+func EqCreateUserParams(arg db.CreateUserParams, password string) gomock.Matcher {
+	return eqCreateUserParamsMatcher{arg, password}
+}
 
 func TestCreateUserAPI(t *testing.T) {
 	user, password := randomUser(t)
@@ -46,7 +75,7 @@ func TestCreateUserAPI(t *testing.T) {
 				}
 
 				store.EXPECT().
-					CreateUser(gomock.Any(), gomock.Eq(arg)).
+					CreateUser(gomock.Any(), EqCreateUserParams(arg, password)).
 					Times(1).
 					Return(user, nil)
 			},
