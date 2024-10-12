@@ -49,6 +49,8 @@ func (server *Server) createUser(ctx *gin.Context) {
 	}
 	log.Println("arg",arg)
 
+	//arg = db.CreateUserParams{}
+
 	user, err := server.store.CreateUser(ctx, arg)
 	if err != nil {
 
