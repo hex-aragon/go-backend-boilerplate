@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -11,10 +12,14 @@ import (
 
 func createRandomUser(t *testing.T) User {
 
+	hashedPassword, err := util.HashPassword(util.RandomString(6))
+	require.NoError(t, err)
+	fmt.Println("hashedPassword",hashedPassword )
 
 	arg := CreateUserParams{
 		Username:    util.RandomOwner(),
-		HashedPassword: "secret",
+		HashedPassword: hashedPassword,
+		//HashedPassword: "secret",
 		FullName: util.RandomOwner(),
 		Email: util.RandomEmail(),
 	}
