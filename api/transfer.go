@@ -1,7 +1,7 @@
 package api
 
 import (
-	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -27,14 +27,24 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 
 	log.Println("req",&req)
 
-	if !server.validAccount(ctx, req.FromAccountID, req.Currency) {
+	_, valid := server.validAccount(ctx, req.FromAccountID, req.Currency)
+	if !valid {
 		return 
 	}
 
-
-	if !server.validAccount(ctx, req.ToAccountID, req.Currency) {
+	_, valid = server.validAccount(ctx, req.ToAccountID, req.Currency)
+	if !valid {
 		return 
 	}
+
+	// if !server.validAccount(ctx, req.FromAccountID, req.Currency) {
+	// 	return 
+	// }
+
+
+	// if !server.validAccount(ctx, req.ToAccountID, req.Currency) {
+	// 	return 
+	// }
 
 	arg := db.TransferTxParams{
 		FromAccountID: req.FromAccountID,
@@ -51,26 +61,33 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, result)
 }
 
-func (server *Server) validAccount(ctx *gin.Context, accountID int64, currency string ) bool {
+func (server *Server) validAccount(ctx *gin.Context, accountID int64, currency string )  (db.Account, bool) {
 
 	account, err := server.store.GetAccount(ctx, accountID)
 	if err != nil {
-		//내부 DB 에러 
-		if err == sql.ErrNoRows {
+
+		if errors.Is(err, db.ErrRecordNotFound){
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
-			return false 
+			return account, false 
 		}
 
 		//내부 HTTP 에러 
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return false 
+		return account, false 
+
+
+		// //내부 DB 에러 
+		// if err == sql.ErrNoRows {
+		// 	ctx.JSON(http.StatusNotFound, errorResponse(err))
+		// 	return account, false 
+		// }
 	}
 
 	if account.Currency != currency {
 		err := fmt.Errorf("account [%d] currency mismatch : %s vs  %s", account.ID, account.Currency, currency)
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return false 
+		return account, false 
 	}
 
-	return true 
+	return account, true 
 }
