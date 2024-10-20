@@ -32,4 +32,7 @@ server:
 mock:
 	mockgen -package mockdb  -destination db/mock/store.go github.com/hex-aragon/go-backend-boilerplate/db/sqlc Store 
 
-.PHONY: postgres createdb dropdb migrateup migrateup1 migratedown migratedown1 sqlc test server mock 
+docker:
+	docker build -t simplebank:latest .
+
+.PHONY: postgres createdb dropdb migrateup migrateup1 migratedown migratedown1 sqlc test server mock docker
