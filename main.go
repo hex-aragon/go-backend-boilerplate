@@ -26,7 +26,10 @@ func main() {
 	fmt.Println("conn",conn)
 
 	store := db.NewStore(conn)
-	server := api.NewServer(store)
+	server, err := api.NewServer(config, store)
+	if err != nil {
+		log.Fatal("cannot create server:", err)
+	}
 
 	fmt.Println("store",store)
 	fmt.Println("server",server)
