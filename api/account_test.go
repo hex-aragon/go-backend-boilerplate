@@ -324,6 +324,7 @@ func TestListAccountsAPI(t *testing.T) {
 				require.Equal(t, http.StatusOK, recorder.Code)
 				requireBodyMatchAccounts(t, recorder.Body, accounts)
 			},
+			
 		},
 		{
 			name: "NoAuthorization",
@@ -404,19 +405,25 @@ func TestListAccountsAPI(t *testing.T) {
 
 	for i := range testCases {
 		tc := testCases[i]
+		fmt.Println("tc",tc)
 
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
+			fmt.Println("ctrl",ctrl)
 			defer ctrl.Finish()
 
 			store := mockdb.NewMockStore(ctrl)
 			tc.buildStubs(store)
-
+			fmt.Println("store",store)
+			
 			server := newTestServer(t, store)
 			recorder := httptest.NewRecorder()
 
 			url := "/accounts"
 			request, err := http.NewRequest(http.MethodGet, url, nil)
+			fmt.Println("Request URL:", request.URL.String())
+			fmt.Println("t",t)
+			fmt.Println("err",err)
 			require.NoError(t, err)
 
 			// Add query parameters to request URL
