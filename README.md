@@ -19,7 +19,7 @@ https://github.com/sqlc-dev/sqlc/blob/v1.4.0/docs/delete.md
 simple bank:
 https://github.com/techschool/simplebank/blob/master/db/query/entry.sql/
 
-docker command
+## docker command
 
 ```
 각 컨테이너 네트워크 설정 확인
